@@ -67,6 +67,11 @@
       text-decoration: none;
       font-weight: bold;
     }
+    .copy-btn {
+      margin-top: 8px;
+      background: #25294a;
+      color: #f5f5f5;
+    }
     .muted {
       color: #b9bad1;
     }
@@ -188,9 +193,21 @@
 
     <div class="card">
       <h2>Contract</h2>
-      <p><b>Contract:</b><br><code id="contractAddress">Loading...</code></p>
-      <p><b>Deploy TX:</b><br><code id="deployTx">Loading...</code></p>
-      <p><b>Interaction TX:</b><br><code id="interactionTx">Loading...</code></p>
+      <p>
+        <b>Contract:</b><br>
+        <code id="contractAddress">Loading...</code><br>
+        <button class="copy-btn" data-copy-target="contractAddress">Copy Contract</button>
+      </p>
+      <p>
+        <b>Deploy TX:</b><br>
+        <code id="deployTx">Loading...</code><br>
+        <button class="copy-btn" data-copy-target="deployTx">Copy Deploy TX</button>
+      </p>
+      <p>
+        <b>Interaction TX:</b><br>
+        <code id="interactionTx">Loading...</code><br>
+        <button class="copy-btn" data-copy-target="interactionTx">Copy Interaction TX</button>
+      </p>
       <div id="explorerLinks"></div>
       <p><a href="https://github.com/agus-ops/opn-flowvault" target="_blank">View source on GitHub</a></p>
     </div>
@@ -236,6 +253,12 @@
       });
     }
 
+    function shortValue(value) {
+      if (/^0x[a-fA-F0-9]{64}$/.test(value)) return shortTx(value);
+      if (/^0x[a-fA-F0-9]{40}$/.test(value)) return short(value);
+      return value.length > 24 ? value.slice(0, 24) + "..." : value;
+    }
+
     function log(message) {
       const now = new Date().toLocaleTimeString();
       const currentText = $("log").textContent.trim();
@@ -252,6 +275,27 @@
     function short(addr) {
       if (!addr) return "-";
       return addr.slice(0, 6) + "..." + addr.slice(-4);
+    }
+
+    function setupCopyButtons() {
+      document.querySelectorAll("[data-copy-target]").forEach((btn) => {
+        btn.onclick = async () => {
+          const target = $(btn.dataset.copyTarget);
+          const value = target?.textContent?.trim();
+
+          if (!value || value === "Loading..." || value === "-") {
+            log("Nothing to copy yet.");
+            return;
+          }
+
+          try {
+            await navigator.clipboard.writeText(value);
+            log("Copied: " + shortValue(value));
+          } catch (err) {
+            log("Copy failed. Long-press the value and copy manually.");
+          }
+        };
+      });
     }
 
     async function loadDeployment() {
@@ -396,6 +440,7 @@
     $("withdraw75Btn").onclick = () => withdrawPercent(75);
     $("withdrawAllBtn").onclick = withdrawAll;
 
+    setupCopyButtons();
     await loadDeployment();
   </script>
 </body>
