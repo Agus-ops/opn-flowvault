@@ -129,6 +129,25 @@
       word-break: normal;
       white-space: nowrap;
     }
+    .event-list {
+      display: grid;
+      gap: 10px;
+    }
+    .event-item {
+      background: #101225;
+      border: 1px solid #33365f;
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .event-title {
+      font-weight: bold;
+    }
+    .event-meta {
+      color: #b9bad1;
+      font-size: 13px;
+      margin-top: 4px;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -210,6 +229,12 @@
       </p>
       <div id="explorerLinks"></div>
       <p><a href="https://github.com/agus-ops/opn-flowvault" target="_blank">View source on GitHub</a></p>
+    </div>
+
+    <div class="card">
+      <h2>Recent On-chain Activity</h2>
+      <p class="muted">Latest FlowVault deposit and withdrawal events from the contract.</p>
+      <div id="eventList" class="event-list">Connect wallet to load events.</div>
     </div>
 
     <div class="card">
@@ -350,6 +375,64 @@
       log("Wallet connected: " + short(connectedAddress));
     }
 
+    function renderEventItem(type, user, amount, txHash, blockNumber) {
+      const label = type === "deposit" ? "Deposit" : "Withdraw";
+      const amountText = Number(ethers.formatEther(amount)).toFixed(4);
+      return `
+        <div class="event-item">
+          <div class="event-title">${label} ${amountText} OPN</div>
+          <div class="event-meta">User: ${short(user)} · Block: ${blockNumber}</div>
+          <div class="event-meta">TX: <code class="tx-hash">${shortTx(txHash)}</code></div>
+        </div>
+      `;
+    }
+
+    async function loadRecentEvents() {
+      if (!provider || !contract || !deployment?.deployTx) return;
+
+      try {
+        const receipt = await provider.getTransactionReceipt(deployment.deployTx);
+        const fromBlock = receipt?.blockNumber || 0;
+
+        const depositEvents = await contract.queryFilter(contract.filters.VaultDeposit(), fromBlock, "latest");
+        const withdrawEvents = await contract.queryFilter(contract.filters.VaultWithdraw(), fromBlock, "latest");
+
+        const items = [
+          ...depositEvents.map((ev) => ({
+            type: "deposit",
+            user: ev.args[0],
+            amount: ev.args[1],
+            txHash: ev.transactionHash,
+            blockNumber: ev.blockNumber,
+            logIndex: ev.index
+          })),
+          ...withdrawEvents.map((ev) => ({
+            type: "withdraw",
+            user: ev.args[0],
+            amount: ev.args[1],
+            txHash: ev.transactionHash,
+            blockNumber: ev.blockNumber,
+            logIndex: ev.index
+          }))
+        ].sort((a, b) => {
+          if (b.blockNumber !== a.blockNumber) return b.blockNumber - a.blockNumber;
+          return b.logIndex - a.logIndex;
+        }).slice(0, 8);
+
+        if (!items.length) {
+          $("eventList").textContent = "No FlowVault events yet.";
+          return;
+        }
+
+        $("eventList").innerHTML = items
+          .map((item) => renderEventItem(item.type, item.user, item.amount, item.txHash, item.blockNumber))
+          .join("");
+      } catch (err) {
+        $("eventList").textContent = "Unable to load events from wallet RPC.";
+        log("Event loading failed: " + (err?.shortMessage || err?.message || "unknown error"));
+      }
+    }
+
     async function refreshData() {
       if (!provider || !signer || !contract) {
         log("Connect wallet first.");
@@ -373,6 +456,8 @@
       const progress = Math.min((totalDepositsNumber / SAVINGS_GOAL_OPN) * 100, 100);
       $("goalProgressText").textContent = totalDepositsNumber.toFixed(3) + " / " + SAVINGS_GOAL_OPN + " OPN (" + progress.toFixed(1) + "%)";
       $("goalProgressBar").style.width = progress + "%";
+
+      await loadRecentEvents();
     }
 
     async function deposit() {
