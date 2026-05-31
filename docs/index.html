@@ -64,6 +64,27 @@
       flex-wrap: wrap;
       gap: 12px;
     }
+    .progress-wrap {
+      background: #101225;
+      border: 1px solid #33365f;
+      border-radius: 999px;
+      height: 18px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #8b5cf6, #38bdf8);
+      transition: width 0.4s ease;
+    }
+    .goal-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
     .stat {
       flex: 1;
       min-width: 220px;
@@ -132,6 +153,18 @@
     </div>
 
     <div class="card">
+      <h2>Savings Goal</h2>
+      <p class="muted">Track FlowVault progress toward a simple testnet savings target.</p>
+      <div class="goal-row">
+        <div><b>Goal:</b> <span id="goalAmount">5 OPN</span></div>
+        <div><b>Progress:</b> <span id="goalProgressText">-</span></div>
+      </div>
+      <div class="progress-wrap">
+        <div id="goalProgressBar" class="progress-bar"></div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Actions</h2>
       <input id="depositAmount" value="0.001" />
       <button id="depositBtn">Deposit OPN</button>
@@ -161,6 +194,7 @@
 
     const OPN_CHAIN_ID = 984n;
     const OPN_CHAIN_HEX = "0x3d8";
+    const SAVINGS_GOAL_OPN = 5;
 
     let deployment;
     let provider;
@@ -271,6 +305,11 @@
       $("vaultBalance").textContent = ethers.formatEther(vaultBal) + " OPN";
       $("totalUsers").textContent = stats[0].toString();
       $("totalDeposits").textContent = ethers.formatEther(stats[1]) + " OPN";
+
+      const totalDepositsNumber = Number(ethers.formatEther(stats[1]));
+      const progress = Math.min((totalDepositsNumber / SAVINGS_GOAL_OPN) * 100, 100);
+      $("goalProgressText").textContent = totalDepositsNumber.toFixed(3) + " / " + SAVINGS_GOAL_OPN + " OPN (" + progress.toFixed(1) + "%)";
+      $("goalProgressBar").style.width = progress + "%";
     }
 
     async function deposit() {
