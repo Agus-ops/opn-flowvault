@@ -206,6 +206,89 @@
       font-weight: bold;
       margin-bottom: 8px;
     }
+
+    /* Mobile polish */
+    @media (max-width: 640px) {
+      main {
+        padding: 18px 12px;
+      }
+
+      h1 {
+        font-size: 32px;
+        line-height: 1.15;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 16px;
+        margin-bottom: 14px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .stat {
+        min-width: 0;
+      }
+
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .badge-row {
+        gap: 8px;
+      }
+
+      .status-badge {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      input {
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+
+      button {
+        width: 100%;
+        min-height: 46px;
+        margin: 6px 0;
+        font-size: 15px;
+      }
+
+      .link-btn {
+        display: block;
+        text-align: center;
+        margin: 8px 0;
+      }
+
+      .copy-btn {
+        width: 100%;
+      }
+
+      code {
+        display: block;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      #log {
+        font-size: 14px;
+      }
+
+      .event-meta {
+        font-size: 12px;
+      }
+    }
+
   </style>
 </head>
 <body>
