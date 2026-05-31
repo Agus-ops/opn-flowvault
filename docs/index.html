@@ -73,12 +73,24 @@
       padding: 16px;
     }
     #log {
-      white-space: pre-wrap;
+      white-space: normal;
       background: #101225;
       border: 1px solid #33365f;
       border-radius: 14px;
       padding: 14px;
       min-height: 80px;
+      overflow-wrap: anywhere;
+    }
+    .log-line {
+      margin-bottom: 8px;
+    }
+    .log-time {
+      color: #b9bad1;
+    }
+    .tx-hash {
+      color: #a9d6ff;
+      word-break: normal;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -154,15 +166,37 @@
 
     const $ = (id) => document.getElementById(id);
 
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function shortTx(hash) {
+      return hash.slice(0, 10) + "..." + hash.slice(-8);
+    }
+
+    function formatLogMessage(message) {
+      const safe = escapeHtml(message);
+      return safe.replace(/0x[a-fA-F0-9]{64}/g, (hash) => {
+        return `<code class="tx-hash">${shortTx(hash)}</code>`;
+      });
+    }
+
     function log(message) {
       const now = new Date().toLocaleTimeString();
-      const current = $("log").textContent.trim();
-      const line = "[" + now + "] " + message;
+      const currentText = $("log").textContent.trim();
+      const currentHtml = $("log").innerHTML.trim();
+      const line = `<div class="log-line"><span class="log-time">[${now}]</span> ${formatLogMessage(message)}</div>`;
 
-      if (!current || current === "Activity will appear here.") {
-        $("log").textContent = line;
+      if (!currentText || currentText === "Activity will appear here.") {
+        $("log").innerHTML = line;
       } else {
-        $("log").textContent = line + "\n" + current;
+        $("log").innerHTML = line + currentHtml;
       }
     }
 
