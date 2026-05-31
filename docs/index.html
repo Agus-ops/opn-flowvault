@@ -137,7 +137,7 @@
 
     <div class="card">
       <h2>Activity Log</h2>
-      <div id="log">Ready.</div>
+      <div id="log">Activity will appear here.</div>
     </div>
   </main>
 
@@ -155,7 +155,15 @@
     const $ = (id) => document.getElementById(id);
 
     function log(message) {
-      $("log").textContent = message + "\\n" + $("log").textContent;
+      const now = new Date().toLocaleTimeString();
+      const current = $("log").textContent.trim();
+      const line = "[" + now + "] " + message;
+
+      if (!current || current === "Activity will appear here.") {
+        $("log").textContent = line;
+      } else {
+        $("log").textContent = line + "\n" + current;
+      }
     }
 
     function short(addr) {
