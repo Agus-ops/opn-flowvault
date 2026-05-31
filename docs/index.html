@@ -13,23 +13,41 @@
       line-height: 1.6;
     }
     main {
-      max-width: 820px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 48px 20px;
+      padding: 32px 18px;
     }
     .card {
       background: #191b33;
       border: 1px solid #33365f;
       border-radius: 18px;
-      padding: 28px;
-      margin-bottom: 20px;
+      padding: 22px;
+      margin-bottom: 18px;
     }
     h1 {
-      font-size: 42px;
-      margin: 0 0 10px;
+      font-size: 38px;
+      margin: 0 0 8px;
     }
     h2 {
       margin-top: 0;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 6px 6px 6px 0;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      max-width: 260px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #33365f;
+      background: #101225;
+      color: #fff;
+      margin: 6px 8px 6px 0;
     }
     code {
       word-break: break-all;
@@ -38,53 +56,208 @@
     a {
       color: #a9d6ff;
     }
+    .muted {
+      color: #b9bad1;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .stat {
+      flex: 1;
+      min-width: 220px;
+      background: #101225;
+      border: 1px solid #33365f;
+      border-radius: 14px;
+      padding: 16px;
+    }
+    #log {
+      white-space: pre-wrap;
+      background: #101225;
+      border: 1px solid #33365f;
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 80px;
+    }
   </style>
 </head>
 <body>
   <main>
     <div class="card">
       <h1>OPN FlowVault</h1>
-      <p>A simple native OPN vault built for OPN Testnet.</p>
+      <p class="muted">A native OPN vault for deposits, withdrawals, and on-chain balance tracking.</p>
+      <button id="connectBtn">Connect Wallet</button>
+      <button id="refreshBtn">Refresh</button>
     </div>
 
     <div class="card">
-      <h2>Overview</h2>
-      <p>
-        OPN FlowVault demonstrates a basic DeFi primitive on OPN Chain.
-        Users can deposit native OPN into a smart contract, track their
-        on-chain vault balance, and withdraw their funds anytime.
-      </p>
+      <h2>Wallet</h2>
+      <p><b>Address:</b> <code id="walletAddress">Not connected</code></p>
+      <p><b>Network:</b> <span id="networkStatus">Unknown</span></p>
+    </div>
+
+    <div class="card">
+      <h2>Balances</h2>
+      <div class="row">
+        <div class="stat">
+          <b>Wallet OPN</b>
+          <div id="walletBalance">-</div>
+        </div>
+        <div class="stat">
+          <b>FlowVault Balance</b>
+          <div id="vaultBalance">-</div>
+        </div>
+        <div class="stat">
+          <b>Total Vault Deposits</b>
+          <div id="totalDeposits">-</div>
+        </div>
+        <div class="stat">
+          <b>Total Users</b>
+          <div id="totalUsers">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Actions</h2>
+      <input id="depositAmount" value="0.001" />
+      <button id="depositBtn">Deposit OPN</button>
+      <button id="withdrawAllBtn">Withdraw All</button>
+      <p class="muted">Use a burner wallet on OPN Testnet only.</p>
     </div>
 
     <div class="card">
       <h2>Contract</h2>
-      <p><b>Network:</b> OPN Testnet</p>
-      <p><b>Chain ID:</b> 984</p>
-      <p><b>Contract:</b><br><code>0xab785E6Ca642171f4ED4e6b40f4F46e996D01D07</code></p>
-      <p><b>Deploy TX:</b><br><code>0x5b087bfa25d5b55a422cfcd5e1e387bb24ff44bb98a2a82704a3c475963ebc19</code></p>
-      <p><b>Interaction TX:</b><br><code>0x8870842734cf53d38ab35669c4da8d1db9866951d55bdc1ffb72ed055146f398</code></p>
+      <p><b>Contract:</b><br><code id="contractAddress">Loading...</code></p>
+      <p><b>Deploy TX:</b><br><code id="deployTx">Loading...</code></p>
+      <p><b>Interaction TX:</b><br><code id="interactionTx">Loading...</code></p>
+      <p><a href="https://github.com/agus-ops/opn-flowvault" target="_blank">View source on GitHub</a></p>
     </div>
 
     <div class="card">
-      <h2>Features</h2>
-      <ul>
-        <li>Native OPN deposits</li>
-        <li>User vault balance tracking</li>
-        <li>Partial withdrawal</li>
-        <li>Withdraw all</li>
-        <li>Vault statistics</li>
-        <li>Deposit and withdraw events</li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <h2>Source Code</h2>
-      <p>
-        <a href="https://github.com/Agus-ops/opn-flowvault" target="_blank">
-          View repository on GitHub
-        </a>
-      </p>
+      <h2>Activity Log</h2>
+      <div id="log">Ready.</div>
     </div>
   </main>
+
+  <script type="module">
+    import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.13.2/+esm";
+
+    const OPN_CHAIN_ID = 984n;
+    const OPN_CHAIN_HEX = "0x3d8";
+
+    let deployment;
+    let provider;
+    let signer;
+    let contract;
+
+    const $ = (id) => document.getElementById(id);
+
+    function log(message) {
+      $("log").textContent = message + "\\n" + $("log").textContent;
+    }
+
+    function short(addr) {
+      if (!addr) return "-";
+      return addr.slice(0, 6) + "..." + addr.slice(-4);
+    }
+
+    async function loadDeployment() {
+      const res = await fetch("./deployment.json");
+      deployment = await res.json();
+
+      $("contractAddress").textContent = deployment.address;
+      $("deployTx").textContent = deployment.deployTx;
+      $("interactionTx").textContent = deployment.interactionTx || "-";
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        log("No injected wallet found. Open this page in MetaMask, Rabby, OKX Wallet, or another EVM wallet browser.");
+        return;
+      }
+
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+
+      const net = await provider.getNetwork();
+
+      if (net.chainId !== OPN_CHAIN_ID) {
+        log("Wrong network. Asking wallet to switch to OPN Testnet...");
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: OPN_CHAIN_HEX }]
+        });
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await provider.getSigner();
+      }
+
+      contract = new ethers.Contract(deployment.address, deployment.abi, signer);
+
+      $("walletAddress").textContent = await signer.getAddress();
+      await refreshData();
+
+      log("Wallet connected: " + short(await signer.getAddress()));
+    }
+
+    async function refreshData() {
+      if (!provider || !signer || !contract) {
+        log("Connect wallet first.");
+        return;
+      }
+
+      const address = await signer.getAddress();
+      const net = await provider.getNetwork();
+      const walletBal = await provider.getBalance(address);
+      const vaultBal = await contract.myBalance();
+      const stats = await contract.vaultStats();
+
+      $("walletAddress").textContent = address;
+      $("networkStatus").textContent = net.chainId === OPN_CHAIN_ID ? "OPN Testnet" : "Wrong network";
+      $("walletBalance").textContent = ethers.formatEther(walletBal) + " OPN";
+      $("vaultBalance").textContent = ethers.formatEther(vaultBal) + " OPN";
+      $("totalUsers").textContent = stats[0].toString();
+      $("totalDeposits").textContent = ethers.formatEther(stats[1]) + " OPN";
+    }
+
+    async function deposit() {
+      if (!contract) {
+        log("Connect wallet first.");
+        return;
+      }
+
+      const amount = $("depositAmount").value || "0.001";
+      log("Sending deposit transaction...");
+      const tx = await contract.deposit({ value: ethers.parseEther(amount) });
+      log("Deposit TX: " + tx.hash);
+      await tx.wait();
+      log("Deposit confirmed.");
+      await refreshData();
+    }
+
+    async function withdrawAll() {
+      if (!contract) {
+        log("Connect wallet first.");
+        return;
+      }
+
+      log("Sending withdrawAll transaction...");
+      const tx = await contract.withdrawAll();
+      log("Withdraw TX: " + tx.hash);
+      await tx.wait();
+      log("Withdraw confirmed.");
+      await refreshData();
+    }
+
+    $("connectBtn").onclick = connectWallet;
+    $("refreshBtn").onclick = refreshData;
+    $("depositBtn").onclick = deposit;
+    $("withdrawAllBtn").onclick = withdrawAll;
+
+    await loadDeployment();
+  </script>
 </body>
 </html>
