@@ -54,3 +54,27 @@ Phase 3: add vault analytics and public activity feed.
 ## License
 
 MIT
+
+## Dashboard Update
+
+The live demo has been upgraded from a static project page into an interactive FlowVault dashboard.
+
+Current dashboard features:
+
+- Wallet connect
+- Dashboard disconnect
+- OPN Testnet live status badges
+- Wallet OPN balance
+- FlowVault balance
+- Total vault deposits
+- Total vault users
+- Savings goal progress bar
+- Deposit OPN action
+- Withdraw 25%, 50%, 75%, or all
+- Contract and transaction explorer links
+- Copy buttons for contract and transaction hashes
+- Recent on-chain activity feed from contract events
+- Activity log with shortened transaction hashes
+- Responsive mobile layout
+
+This update completes the first version of the Phase 2 dashboard roadmap.
