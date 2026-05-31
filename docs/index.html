@@ -56,6 +56,17 @@
     a {
       color: #a9d6ff;
     }
+    .link-btn {
+      display: inline-block;
+      margin: 6px 8px 6px 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #101225;
+      border: 1px solid #33365f;
+      color: #a9d6ff;
+      text-decoration: none;
+      font-weight: bold;
+    }
     .muted {
       color: #b9bad1;
     }
@@ -180,6 +191,7 @@
       <p><b>Contract:</b><br><code id="contractAddress">Loading...</code></p>
       <p><b>Deploy TX:</b><br><code id="deployTx">Loading...</code></p>
       <p><b>Interaction TX:</b><br><code id="interactionTx">Loading...</code></p>
+      <div id="explorerLinks"></div>
       <p><a href="https://github.com/agus-ops/opn-flowvault" target="_blank">View source on GitHub</a></p>
     </div>
 
@@ -249,6 +261,13 @@
       $("contractAddress").textContent = deployment.address;
       $("deployTx").textContent = deployment.deployTx;
       $("interactionTx").textContent = deployment.interactionTx || "-";
+
+      const explorerBase = "https://testnet.iopn.tech";
+      $("explorerLinks").innerHTML = `
+        <a class="link-btn" href="${explorerBase}/address/${deployment.address}" target="_blank">View Contract</a>
+        <a class="link-btn" href="${explorerBase}/tx/${deployment.deployTx}" target="_blank">View Deploy TX</a>
+        <a class="link-btn" href="${explorerBase}/tx/${deployment.interactionTx}" target="_blank">View First Interaction TX</a>
+      `;
     }
 
     async function connectWallet() {
