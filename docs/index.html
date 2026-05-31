@@ -197,10 +197,15 @@
 
       contract = new ethers.Contract(deployment.address, deployment.abi, signer);
 
-      $("walletAddress").textContent = await signer.getAddress();
+      const connectedAddress = await signer.getAddress();
+
+      $("walletAddress").textContent = connectedAddress;
+      $("connectBtn").textContent = "Connected";
+      $("connectBtn").disabled = true;
+
       await refreshData();
 
-      log("Wallet connected: " + short(await signer.getAddress()));
+      log("Wallet connected: " + short(connectedAddress));
     }
 
     async function refreshData() {
