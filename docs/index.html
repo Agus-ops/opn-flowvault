@@ -135,6 +135,9 @@
       <h2>Actions</h2>
       <input id="depositAmount" value="0.001" />
       <button id="depositBtn">Deposit OPN</button>
+      <button id="withdraw25Btn">Withdraw 25%</button>
+      <button id="withdraw50Btn">Withdraw 50%</button>
+      <button id="withdraw75Btn">Withdraw 75%</button>
       <button id="withdrawAllBtn">Withdraw All</button>
       <p class="muted">Use a burner wallet on OPN Testnet only.</p>
     </div>
@@ -285,6 +288,34 @@
       await refreshData();
     }
 
+    async function withdrawPercent(percent) {
+      if (!contract) {
+        log("Connect wallet first.");
+        return;
+      }
+
+      const vaultBal = await contract.myBalance();
+
+      if (vaultBal === 0n) {
+        log("No vault balance to withdraw.");
+        return;
+      }
+
+      const amount = vaultBal * BigInt(percent) / 100n;
+
+      if (amount === 0n) {
+        log("Withdraw amount is too small.");
+        return;
+      }
+
+      log("Sending withdraw " + percent + "% transaction...");
+      const tx = await contract.withdraw(amount);
+      log("Withdraw " + percent + "% TX: " + tx.hash);
+      await tx.wait();
+      log("Withdraw " + percent + "% confirmed.");
+      await refreshData();
+    }
+
     async function withdrawAll() {
       if (!contract) {
         log("Connect wallet first.");
@@ -302,6 +333,9 @@
     $("connectBtn").onclick = connectWallet;
     $("refreshBtn").onclick = refreshData;
     $("depositBtn").onclick = deposit;
+    $("withdraw25Btn").onclick = () => withdrawPercent(25);
+    $("withdraw50Btn").onclick = () => withdrawPercent(50);
+    $("withdraw75Btn").onclick = () => withdrawPercent(75);
     $("withdrawAllBtn").onclick = withdrawAll;
 
     await loadDeployment();
