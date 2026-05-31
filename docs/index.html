@@ -220,6 +220,7 @@
         <span class="status-badge"><span class="dot dot-vault"></span><span id="badgeDeposits">Deposits: -</span></span>
       </div>
       <button id="connectBtn">Connect Wallet</button>
+      <button id="disconnectBtn" style="display:none;">Disconnect</button>
       <button id="refreshBtn">Refresh</button>
     </div>
 
@@ -459,6 +460,7 @@
       $("walletAddress").textContent = connectedAddress;
       $("connectBtn").textContent = "Connected";
       $("connectBtn").disabled = true;
+      $("disconnectBtn").style.display = "inline-block";
 
       await refreshData();
 
@@ -609,7 +611,32 @@
       await refreshData();
     }
 
+    function disconnectWallet() {
+      provider = null;
+      signer = null;
+      contract = null;
+
+      $("walletAddress").textContent = "Not connected";
+      $("networkStatus").textContent = "Unknown";
+      $("walletBalance").textContent = "-";
+      $("vaultBalance").textContent = "-";
+      $("totalDeposits").textContent = "-";
+      $("totalUsers").textContent = "-";
+      $("badgeUsers").textContent = "Users: -";
+      $("badgeDeposits").textContent = "Deposits: -";
+      $("goalProgressText").textContent = "-";
+      $("goalProgressBar").style.width = "0%";
+      $("eventList").textContent = "Connect wallet to load events.";
+
+      $("connectBtn").textContent = "Connect Wallet";
+      $("connectBtn").disabled = false;
+      $("disconnectBtn").style.display = "none";
+
+      log("Wallet disconnected from dashboard.");
+    }
+
     $("connectBtn").onclick = connectWallet;
+    $("disconnectBtn").onclick = disconnectWallet;
     $("refreshBtn").onclick = refreshData;
     $("depositBtn").onclick = deposit;
     $("withdraw25Btn").onclick = () => withdrawPercent(25);
