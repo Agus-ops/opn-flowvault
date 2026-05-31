@@ -75,6 +75,41 @@
     .muted {
       color: #b9bad1;
     }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #101225;
+      border: 1px solid #33365f;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-live {
+      background: #22c55e;
+    }
+    .dot-active {
+      background: #38bdf8;
+    }
+    .dot-users {
+      background: #f59e0b;
+    }
+    .dot-vault {
+      background: #a78bfa;
+    }
     .row {
       display: flex;
       flex-wrap: wrap;
@@ -155,6 +190,12 @@
     <div class="card">
       <h1>OPN FlowVault</h1>
       <p class="muted">A native OPN vault for deposits, withdrawals, and on-chain balance tracking.</p>
+      <div class="badge-row">
+        <span class="status-badge"><span class="dot dot-live"></span>Live on OPN Testnet</span>
+        <span class="status-badge"><span class="dot dot-active"></span>Contract Active</span>
+        <span class="status-badge"><span class="dot dot-users"></span><span id="badgeUsers">Users: -</span></span>
+        <span class="status-badge"><span class="dot dot-vault"></span><span id="badgeDeposits">Deposits: -</span></span>
+      </div>
       <button id="connectBtn">Connect Wallet</button>
       <button id="refreshBtn">Refresh</button>
     </div>
@@ -451,6 +492,8 @@
       $("vaultBalance").textContent = ethers.formatEther(vaultBal) + " OPN";
       $("totalUsers").textContent = stats[0].toString();
       $("totalDeposits").textContent = ethers.formatEther(stats[1]) + " OPN";
+      $("badgeUsers").textContent = "Users: " + stats[0].toString();
+      $("badgeDeposits").textContent = "Deposits: " + Number(ethers.formatEther(stats[1])).toFixed(3) + " OPN";
 
       const totalDepositsNumber = Number(ethers.formatEther(stats[1]));
       const progress = Math.min((totalDepositsNumber / SAVINGS_GOAL_OPN) * 100, 100);
