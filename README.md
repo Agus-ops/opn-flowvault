@@ -52,9 +52,40 @@ Interact: node scripts/interact.mjs
 
 ## Roadmap
 
-Phase 1: deploy contract, interact with deposit, publish source code.
-Phase 2: add frontend dashboard with deposit and withdraw buttons.
-Phase 3: add vault analytics and public activity feed.
+### Phase 1 — Completed
+
+- Deploy OPNFlowVault contract on OPN Testnet
+- Execute first native OPN deposit interaction
+- Publish source code and deployment scripts
+- Verify contract source code on OPN Testnet Explorer
+
+### Phase 2 — Completed
+
+- Launch interactive FlowVault dashboard
+- Add wallet connect and disconnect flow
+- Display wallet balance, vault balance, total deposits, and total users
+- Add deposit and withdraw actions
+- Add explorer links, copy buttons, and responsive mobile layout
+
+### Phase 3 — In Progress
+
+- Improve public activity feed from vault events
+- Add clearer verified-contract status inside the dashboard
+- Add better empty-state and transaction-status messages
+- Improve README documentation and builder portfolio presentation
+
+### Phase 4 — Planned
+
+- Add automatic OPN Testnet network switch/add flow
+- Improve wallet UX for MetaMask, Rabby, and mobile wallets
+- Add optional React/Vite dashboard version
+- Evaluate RainbowKit integration for a future V2 frontend
+
+### Phase 5 — Future
+
+- Add reusable FlowVault template for other EVM testnets
+- Explore multi-chain variants such as X1 EcoVault or Arc StableVault
+- Add lightweight analytics for deposits, withdrawals, and unique users
 
 ## License
 
